@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CASEN 2024: ¿quién cuenta y a quién se cuenta?</title>
+<style>
+:root{--bg:#fbfaf7;--fg:#1d1d1f;--mute:#5f6368;--acc:#1f4e79;--acc2:#e07b39;--card:#fff;--bd:#e4e1d8}
+@media (prefers-color-scheme:dark){:root{--bg:#16181c;--fg:#ececec;--mute:#a0a4ab;--acc:#7fb2e5;--acc2:#f0a36b;--card:#1e2126;--bd:#2d3138}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:17px/1.65 Georgia,"Times New Roman",serif}
+main{max-width:780px;margin:0 auto;padding:2.5rem 1.2rem 4rem}
+header{padding-bottom:1.5rem;border-bottom:1px solid var(--bd);margin-bottom:2rem}
+h1{font-size:2.1rem;line-height:1.2;margin:.2rem 0 .6rem}
+h2{font-size:1.4rem;margin:2.4rem 0 .6rem;color:var(--acc)}
+h3{font-size:1.1rem;margin:2rem 0 .4rem}
+code{font-size:.88em;background:var(--card);border:1px solid var(--bd);border-radius:4px;padding:0 .25em}
+.kicker{font:600 .8rem/1 system-ui,sans-serif;letter-spacing:.1em;text-transform:uppercase;color:var(--acc2)}
+.sub{color:var(--mute);margin:0}
+figure{margin:1.4rem 0;background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:.8rem}
+figure img{width:100%;height:auto;display:block;border-radius:6px;background:#fff}
+figcaption{font:.85rem/1.4 system-ui,sans-serif;color:var(--mute);margin-top:.6rem}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:.8rem;margin:1.4rem 0;font-family:system-ui,sans-serif}
+.stat{background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:.8rem 1rem}
+.stat b{display:block;font-size:1.6rem;color:var(--acc)}
+.stat span{font-size:.82rem;color:var(--mute)}
+a{color:var(--acc)}
+footer{margin-top:3rem;padding-top:1rem;border-top:1px solid var(--bd);font:.85rem/1.5 system-ui,sans-serif;color:var(--mute)}
+li{margin:.3rem 0}
+</style>
+</head>
+<body>
+<main>
+<header>
+<div class="kicker">Activismo de datos · ETI195 Ética para Ciencia de Datos y Estadística</div>
+<h1>CASEN 2024: ¿quién cuenta y a quién se cuenta?</h1>
+<p class="sub">Proyecto final del semestre. Pontificia Universidad Católica de Chile, 2026.</p>
+</header>
+
+<h2>1. Por qué elegimos CASEN</h2>
+<p>La Encuesta de Caracterización Socioeconómica Nacional (CASEN) es la principal fuente para medir pobreza y desigualdad en Chile, y de ella depende cómo se distribuyen recursos y políticas públicas. Elegimos este dataset porque lo leemos como una herramienta de <strong>visibilidad</strong>: muestra quién es contado y cómo, y también quién aparece mal clasificado o no aparece, y por lo tanto queda fuera de la discusión pública y del presupuesto del Estado.</p>
+<p>Esa mirada cambia el rol de cada persona encuestada: deja de ser un caso y pasa a ser titular de sus datos, con derechos sobre cómo se usan. Nos importaba el tema porque CASEN incluye variables sensibles (pertenencia a pueblos indígenas, salud, ingresos, territorio) que pueden servir para exigir justicia, pero también para estigmatizar, por ejemplo atribuir la pobreza a una cultura en vez de a la desigualdad estructural.</p>
+<div class="stats">
+<div class="stat"><b>212.471</b><span>personas en la base analizada</span></div>
+<div class="stat"><b>42</b><span>variables</span></div>
+<div class="stat"><b>17,6 %</b><span>en pobreza multidimensional (muestra, sin ponderar)</span></div>
+</div>
+
+<h2>2. Qué hicimos durante el semestre</h2>
+<p>El proyecto avanzó en cuatro etapas: explorar los datos (taller 1), entrenar un modelo y medir su justicia (taller 2), explicar modelos y lenguaje con xAI (taller 3) y proteger la privacidad con datos sintéticos (taller 4). En todas partes la pregunta fue la misma: ¿a quién beneficia o perjudica trabajar con CASEN de esta manera?</p>
+
+<h3>Taller 1 · Explorar quién aparece en los datos</h3>
+<p>CASEN 2024 la levanta el Ministerio de Desarrollo Social y Familia junto al INE para estimar la pobreza y orientar presupuestos, subsidios y programas sociales. Revisamos sus variables, identificamos las sensibles (pertenencia a pueblos indígenas, estado nutricional, discriminación por orientación sexual o identidad de género) y eliminamos las columnas con más de 65 % de datos faltantes.</p>
+<figure>
+<img src="img/t1_distribuciones.png" alt="Tres gráficos de barras: distribución por sexo, pertenencia a pueblos indígenas y discriminación por orientación o identidad">
+<figcaption>Distribución de tres variables demográficas y sensibles. Hay un desbalance fuerte: cerca de 86 % de las personas no pertenece a un pueblo indígena y solo 0,55 % declara discriminación por orientación o identidad.</figcaption>
+</figure>
+<p>También miramos una subpoblación interseccional: las mujeres indígenas son 7,5 % de la muestra, y su ingreso del hogar tiene una mediana y un percentil 75 claramente más bajos que los del resto de la población. Interpretamos el desbalance como reflejo de la realidad del país y no como un error de medición, pero advertimos que entrenar modelos con él puede deteriorar el rendimiento y hacer que se ignoren las minorías.</p>
+<figure>
+<img src="img/t1_interseccion.png" alt="Boxplot del ingreso total del hogar para mujeres indígenas y el resto de la población">
+<figcaption>Ingreso total del hogar según subpoblación (sin valores atípicos).</figcaption>
+</figure>
+
+<h3>Taller 2 · ¿Es justo un modelo que predice la pobreza?</h3>
+<p>Entrenamos un árbol de decisión para predecir <code>pobreza_multi</code> (preprocesamiento con imputación, recorte de valores extremos, codificación y estandarización; <code>class_weight="balanced"</code> por el desbalance). El accuracy fue de 76 %, pero ese promedio esconde diferencias entre grupos. Con la tasa de falsos negativos (TFN), que mide a las personas pobres que el modelo no detecta, vimos que las personas con dificultad física (<code>h7e</code>) quedan sin detectar en 30,8 % de los casos, frente a 25,8 % de quienes no tienen dificultad. Para pueblos indígenas la TFN fue de 22,3 % frente a 27,0 % en no indígenas. Además, en ambos grupos más de la mitad de las predicciones de pobreza son falsos positivos (TFD sobre 57 %), consecuencia de priorizar no dejar pobres afuera.</p>
+<p>Aplicamos <strong>EqOddsPostprocessing</strong> (AIF360) sobre el atributo <code>r3</code>: la diferencia de oportunidad igualada (EOD) pasó de −0,108 a casi 0 y la de probabilidades promedio (AOD) de −0,078 a casi 0. Como limitaciones, el algoritmo cambia predicciones correctas para equilibrar los errores y necesita conocer el grupo de cada persona, lo que puede ser invasivo con datos sensibles.</p>
+<figure>
+<img src="img/t2_equidad.png" alt="Dos gráficos: tasa de falsos negativos por grupo y métricas EOD y AOD antes y después de EqOddsPostprocessing">
+<figcaption>Izquierda: pobres no detectados por el modelo según grupo. Derecha: métricas de equidad para pueblos indígenas antes y después del ajuste.</figcaption>
+</figure>
+
+<h3>Taller 3 · Abrir la caja negra con LIME y SHAP</h3>
+<p>Probamos dos escenarios. Primero, un sistema que clasifica reclamos al Registro Social de Hogares usando BETO (análisis de sentimientos en español), con diez frases con sarcasmo, jerga chilena y expresiones de precariedad. BETO etiquetó nueve como negativas y una como neutral (la de más jerga), pero LIME mostró que acierta por motivos equivocados: se apoya en palabras de relleno como «y», «ni» o «su», y en frases irónicas se fija en «maravilla» o «encanta», así que fallaría si alguien las usara literalmente. Ahí hay un riesgo ético claro: un sistema así podría dejar sin atención a personas que se expresan con jerga.</p>
+<figure>
+<img src="img/t3_lime_f2.png" alt="Gráfico de LIME con las palabras que más contribuyen a la predicción de la frase 2">
+<figcaption>LIME, frase 2 (ironía): el modelo se apoya en «maravilla» y «encanta».</figcaption>
+</figure>
+<p>Segundo, entrenamos un Random Forest sobre <code>pobreza_multi</code>. Su precisión para «pobre» es 98 %, pero su recall es solo 62 %: hay 4.271 falsos negativos contra 166 falsos positivos, es decir, mucha gente en pobreza quedaría sin ayuda. Con SHAP vimos que pesan más el tamaño del hogar (<code>p9</code>, <code>tot_per_h</code>), el estado material de la vivienda (<code>v3</code>) y el acceso a internet (<code>r17a</code>), coherente con una pobreza que hoy se mide en varias dimensiones. Aun así, SHAP reproduce los sesgos de los datos históricos y no es suficiente por sí solo.</p>
+<figure>
+<img src="img/t3_shap.png" alt="Summary plot de SHAP con las variables más importantes del Random Forest">
+<figcaption>Resumen SHAP del Random Forest (2.500 personas de prueba).</figcaption>
+</figure>
+
+<h3>Taller 4 · Proteger sin invisibilizar</h3>
+<p>Evaluamos CASEN con los seis principios del enfoque de derechos humanos en datos (OHCHR, 2018): participación, desagregación, autoidentificación, transparencia, privacidad y rendición de cuentas. Nuestro balance fue que cumple bien con la transparencia y casi del todo con la desagregación, y solo parcialmente con los demás. Después generamos una versión sintética del dataset, que presentamos a continuación.</p>
+
+<h2>3. Visualización central: ¿qué pasa cuando protegemos los datos?</h2>
+<p>Para el taller 4 generamos una versión sintética de CASEN con <strong>DataSynthesizer</strong> en modo de atributos correlacionados (privacidad diferencial, ε = 1), usando siete variables: zona, sexo, edad, pertenencia a pueblo indígena, sistema de salud, alfabetismo y pobreza multidimensional. Luego comparamos original y sintético con ModelInspector.</p>
+<figure>
+<img src="img/brechas.png" alt="Gráfico de barras horizontales con la tasa de pobreza multidimensional por pueblo indígena y zona, original contra sintético">
+<figcaption>Tasa de pobreza multidimensional por subgrupo (registros sin factor de expansión). Las brechas del sintético son menores que las reales.</figcaption>
+</figure>
+<p><strong>Qué hicimos con esta visualización.</strong> Primero verificamos la fidelidad general: las divergencias KL de las variables categóricas son del orden de 10<sup>−5</sup> y el estadístico KS de la edad es cercano a 0,006, es decir, el sintético reproduce muy bien las distribuciones. Luego fuimos más allá de los promedios y comparamos la pobreza por subgrupo. Ahí apareció el costo de la privacidad: la brecha entre personas indígenas y no indígenas baja de 23,8 % frente a 16,6 % en el original a 19,4 % frente a 17,5 % en el sintético, y la brecha rural-urbana baja de 21,5 % frente a 16,8 % a 19,6 % frente a 17,4 %.</p>
+<figure>
+<img src="img/mi_heatmap.png" alt="Mapa de calor de información mutua entre variables, datos originales y sintéticos">
+<figcaption>Información mutua por pares de variables: la estructura de dependencias del sintético se parece a la del original.</figcaption>
+</figure>
+
+<h2>4. Cómo resolvemos el dilema entre transparencia y privacidad</h2>
+<p>Proponemos un <strong>acceso por niveles</strong>. Los datos reales detallados (ubicación exacta del hogar, composición familiar, ingresos y beneficios) solo deberían usarse dentro del Estado o en entornos seguros para investigadores acreditados, con evaluación de impacto, registro de accesos y revisión de resultados. Para publicación abierta, docencia y activismo, deberían usarse versiones generalizadas o sintéticas. Esto se apoya en que pocos atributos demográficos bastan para reidentificar a la mayoría de las personas (Rocher et al., 2019) y en que la normativa chilena (Ley N° 19.628, modificada por la Ley N° 21.719) considera dato personal a lo que solo está anonimizado de forma reversible.</p>
+
+<h2>5. Conclusión</h2>
+<p>Los datos sintéticos permiten abrir CASEN a periodistas, organizaciones y estudiantes sin exponer a ningún hogar, y por eso son una herramienta valiosa para el activismo de datos. Pero la privacidad tiene un costo que no se reparte igual: el sintético suaviza justamente las desigualdades que más nos interesa denunciar, las de los grupos pequeños. Esa limitación es en sí un argumento, y se suma a lo que vimos antes: los grupos pequeños quedan peor representados en la muestra (taller 1), peor detectados por los modelos (talleres 2 y 3) y más difuminados cuando se protege su privacidad (taller 4). En los cuatro casos el error cae sobre quienes ya enfrentan más desigualdad. Pedimos que el Estado publique tabulaciones oficiales por subgrupo con ruido calibrado y documentado, un datasheet público, un registro de usos de los datos, un canal para ejercer derechos sobre ellos y participación vinculante de las comunidades en el diseño del cuestionario. Mientras tanto, cualquier uso del sintético debe decir explícitamente que las brechas reales son mayores.</p>
+
+<h2>Material</h2>
+<ul>
+<li><a href="datos/descripcion_casen.json">Descripción del dataset (JSON) generada con DataSynthesizer</a></li>
+<li><a href="datos/casen_sintetico.csv">Dataset sintético (CSV)</a></li>
+</ul>
+
+<h2>Referencias</h2>
+<ul>
+<li>Office of the United Nations High Commissioner for Human Rights. (2018). <em>A human rights-based approach to data: Leaving no one behind in the 2030 Agenda for Sustainable Development</em>. United Nations.</li>
+<li>Valdovinos Rosas, R. M. et al. (2013). Tratamiento del desbalance en problemas con múltiples clases con ECOC. <em>Computación y Sistemas</em>, <em>17</em>(4), 583-592.</li>
+<li>Cedeño Menéndez, R. S. (2026). Evaluation of machine learning model performance for sentiment analysis in Spanish tweets under different class imbalance scenarios. <em>LAJC</em>, <em>13</em>(2), 30-42. https://doi.org/10.33333/lajc.vol13n2.02</li>
+<li>Rocher, L., Hendrickx, J. M., &amp; de Montjoye, Y.-A. (2019). Estimating the success of re-identifications in incomplete datasets using generative models. <em>Nature Communications</em>, <em>10</em>, Artículo 3069. <a href="https://doi.org/10.1038/s41467-019-10933-3">https://doi.org/10.1038/s41467-019-10933-3</a></li>
+<li>Ping, H., Stoyanovich, J., &amp; Howe, B. (2017). DataSynthesizer: Privacy-preserving synthetic datasets. <em>Proceedings of the 29th International Conference on Scientific and Statistical Database Management</em>. ACM. <a href="https://doi.org/10.1145/3085504.3091117">https://doi.org/10.1145/3085504.3091117</a></li>
+</ul>
+<footer>Integrantes: Lucas Andrés Von Gehr Campos, Cristóbal Alonso Vargas Jer y Benjamín Alonso Ulloa Mura. Proyecto desarrollado para ETI195, 2026-2.</footer>
+</main>
+</body>
+</html>
